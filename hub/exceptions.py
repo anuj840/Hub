@@ -140,7 +140,7 @@ class LockedException(HubException):
         super().__init__(message=message)
 
 
-class HubDatasetNotFoundException(HubException):
+class DatasetNotFound(HubException):
     def __init__(self, response):
         message = f"The dataset with tag {response} was not found"
         super().__init__(message=message)
@@ -164,9 +164,5 @@ class DynamicTensorNotFoundException(Exception):
     pass
 
 
-class NotHubDatasetToOverwriteException(Exception):
-    pass
-
-
-class NotHubDatasetToAppendException(Exception):
+class OverwriteIsNotSafeException(Exception):
     pass

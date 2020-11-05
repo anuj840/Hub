@@ -1,25 +1,11 @@
-import posixpath
-
 import numpy as np
-import fsspec
 
-from hub.store.dynamic_tensor import DynamicTensor
-from hub.store.store import StorageMapWrapperWithCommit
-
-
-def create_store(path: str):
-    fs: fsspec.AbstractFileSystem = fsspec.filesystem("file")
-    if fs.exists(path):
-        fs.rm(path, recursive=True)
-    fs.makedirs(posixpath.join(path, "--dynamic--"))
-    mapper = fs.get_mapper(path)
-    mapper["--dynamic--/hello.txt"] = bytes("Hello World", "utf-8")
-    return StorageMapWrapperWithCommit(mapper)
+from hub.api.tensor import Tensor
 
 
 def test_dynamic_tensor():
-    t = DynamicTensor(
-        create_store("./data/test/test_dynamic_tensor"),
+    t = Tensor(
+        "./data/test/test_dynamic_tensor",
         mode="w",
         shape=(5, 100, 100),
         max_shape=(5, 100, 100),
@@ -30,8 +16,8 @@ def test_dynamic_tensor():
 
 
 def test_dynamic_tensor_2():
-    t = DynamicTensor(
-        create_store("./data/test/test_dynamic_tensor_2"),
+    t = Tensor(
+        "./data/test/test_dynamic_tensor_2",
         mode="w",
         shape=(5, None, None),
         max_shape=(5, 100, 100),
@@ -45,8 +31,8 @@ def test_dynamic_tensor_2():
 
 
 def test_dynamic_tensor_3():
-    t = DynamicTensor(
-        create_store("./data/test/test_dynamic_tensor_3"),
+    t = Tensor(
+        "./data/test/test_dynamic_tensor_3",
         mode="w",
         shape=(5, None, None, None),
         max_shape=(5, 100, 100, 100),
@@ -59,8 +45,8 @@ def test_dynamic_tensor_3():
 
 
 def test_dynamic_tensor_shapes():
-    t = DynamicTensor(
-        create_store("./data/test/test_dynamic_tensor_5"),
+    t = Tensor(
+        "./data/test/test_dynamic_tensor_4",
         mode="w",
         shape=(5, None, None),
         max_shape=(5, 100, 100),
@@ -72,20 +58,20 @@ def test_dynamic_tensor_shapes():
 
 
 def test_dynamic_tensor_4():
-    t = DynamicTensor(
-        create_store("./data/test/test_dynamic_tensor_6"),
+    t = Tensor(
+        "./data/test/test_dynamic_tensor_4",
         mode="w",
         shape=(5, None, None, None),
-        max_shape=(5, 100, 100, 10),
+        max_shape=(5, 100, 100, 100),
         dtype="int32",
     )
-    t[0, 6:8] = np.ones((2, 20, 10), dtype="int32")
-    assert (t[0, 6:8] == np.ones((2, 20, 10), dtype="int32")).all()
+    t[0, 6:8] = np.ones((2, 20, 30), dtype="int32")
+    assert (t[0, 6:8] == np.ones((2, 20, 30), dtype="int32")).all()
 
 
 def test_chunk_iterator():
-    t = DynamicTensor(
-        create_store("./data/test/test_dynamic_tensor_7"),
+    t = Tensor(
+        "./data/test/test_dynamic_tensor_4",
         mode="w",
         shape=(50, 100, 100, 100),
         max_shape=(50, 100, 100, 100),
@@ -97,6 +83,5 @@ def test_chunk_iterator():
 
 
 if __name__ == "__main__":
-    test_dynamic_tensor_2()
-    # test_chunk_iterator()
-    # test_dynamic_tensor_shapes()
+    test_chunk_iterator()
+    test_dynamic_tensor_shapes()

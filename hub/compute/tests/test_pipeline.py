@@ -4,13 +4,13 @@ import hub
 from hub.features import Tensor
 import ray
 
-my_schema = {
+my_dtype = {
     "image": Tensor((28, 28, 4), "int32", (28, 28, 4)),
     "label": "<U20",
 }
 
 
-@hub.transform(schema=my_schema)
+@hub.transform(dtype=my_dtype)
 def my_transform(sample):
     return {
         "image": sample["image"].numpy() * 2,
@@ -20,8 +20,8 @@ def my_transform(sample):
 
 def test_pipeline_basic():
     ray.init(local_mode=True)
-    ds = hub.Dataset(
-        "./data/test/test_pipeline_basic", mode="w", shape=(100,), schema=my_schema
+    ds = hub.open(
+        "./data/test/test_pipeline_basic", mode="w", shape=(100,), dtype=my_dtype
     )
 
     for i in range(len(ds)):

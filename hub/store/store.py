@@ -1,4 +1,3 @@
-from requests.adapters import ProxyError
 from hub.store.cache import Cache
 
 from hub.client.hub_control import HubControlClient
@@ -56,18 +55,19 @@ def get_fs_and_path(url: str, token=None) -> Tuple[fsspec.AbstractFileSystem, st
     else:
         # TOOD check if url is username/dataset:version
         url, creds = _connect(url)
-        fs = fsspec.filesystem(
-            "s3",
-            key=creds["access_key"],
-            secret=creds["secret_key"],
-            token=creds["session_token"],
-            client_kwargs={
-                "endpoint_url": creds["endpoint"],
-                "region_name": creds["region"],
-            },
+        return (
+            fsspec.filesystem(
+                "s3",
+                key=creds["access_key"],
+                secret=creds["secret_key"],
+                token=creds["session_token"],
+                client_kwargs={
+                    "endpoint_url": creds["endpoint"],
+                    "region_name": creds["region"],
+                },
+            ),
+            url,
         )
-
-        return (fs, url)
 
 
 def read_aws_creds(filepath: str):
@@ -77,19 +77,20 @@ def read_aws_creds(filepath: str):
 
 
 def _get_storage_map(fs, path):
-    return StorageMapWrapperWithCommit(fs.get_mapper(path, check=False, create=False))
+    return fs.get_mapper(path, check=False, create=False)
 
 
 def get_storage_map(fs, path, memcache=2 ** 26):
+    # store = StorageMapWrapperWithCommit(_get_storage_map(fs, path)) # in case when cache is commented
     store = _get_storage_map(fs, path)
     cache_path = os.path.join("~/.activeloop/cache/", path)
-    return Cache(store, memcache, path=cache_path)
+    # return store
+    return Cache(store, memcache)
 
 
 class StorageMapWrapperWithCommit(MutableMapping):
     def __init__(self, map):
         self._map = map
-        self.root = self._map.root
 
     def __getitem__(self, slice_):
         return self._map[slice_]

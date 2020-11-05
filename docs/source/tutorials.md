@@ -8,5 +8,4 @@
     tutorials/pytorch
     tutorials/docker
     tutorials/creds
-    tutorials/new_api.md
 ```
